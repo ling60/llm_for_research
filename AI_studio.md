@@ -13,7 +13,7 @@
 同等质量下没有对手。
 ### AI Studio无提示词污染
 - 绝大部分大模型平台都会在用户输入的提示词前后，自动添加一些“辅助提示词”，这些提示词会影响模型的回答，且无法查看和修改。AI Studio没有这个问题，可以完全自定义提示词（理论上）。
-- 实测：AI Studio的回答质量远超同模型的gemini cli（后者也可能受推理限制）。
+- 实测：AI Studio的回答质量远超同模型的gemini cli（后者也可能受推理窗口限制）。
 
 ---
 ## 2. 功能介绍
@@ -23,7 +23,7 @@
 #### 系统提示词
 有意义，但不必过于复杂。越好的模型，提示词就可以越简单。
 #### 温度：0.5 - 1.0
-平时使用1，代码生成时可向下调整（个人使用0.7）
+平时使用1，代码生成时可向下调整（个人使用0.7-0.8）
 #### Thinking budget: 最大（32k）
 建议使用最大值
 #### Grounding with Google Search
@@ -81,6 +81,7 @@ LLM随机性问题
 - 免费次数过少
 - 基模型较差（flash，而非pro，氪金可升为pro）
 ### 免费平替
+#### 具备深度研究功能的旗舰大模型
 - Grok
 - 通义（https://www.tongyi.com/）
 - 豆包
@@ -109,7 +110,7 @@ LLM随机性问题
 
 ### 如何提示 Gemini 总结对话历史，方便“另开新对话”继续？
 - 请帮我总结我们到目前为止的对话。我需要一个简洁的摘要，包含以下几点：1. 我们讨论的核心问题；2. 已经确定的关键信息和数据；3. 尚未解决的开放性问题。请用要点格式列出，方便我开启一个新的对话继续讨论。
-- Please provide a concise summary of our entire conversation. The goal is to capture all the essential context so I can use this as the context for a new chat and continue our work.
+- Please provide a concise summary of our entire conversation. The goal is to capture all the essential context so I can use this for a new chat and continue our work.
 Please structure the summary with the following sections:
 Main Goal/Objective: What was the primary problem or topic we were discussing?
 Key Information & Decisions: What were the most important facts, findings, or decisions we made?
