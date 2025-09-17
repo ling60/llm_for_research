@@ -1,4 +1,4 @@
-# AI Studio 使用分享
+# AI Studio 使用分享（研究向）
 - 2025-09更新（yxiaohan）
   
 ---
