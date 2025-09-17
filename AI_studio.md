@@ -1,0 +1,115 @@
+# AI Studio 使用分享
+## 1. 为什么选择 AI Studio + Gemini Pro
+### 丰富的背景知识
+这一点对交叉学科以及前沿创新问题尤为重要。
+### 1M长上下文
+基本没有对手。目前最接近的是通义qwen3。
+### 推理深度
+旗舰模型差距不大，包括deepseek。
+### 免费无限次使用
+同等质量下没有对手。
+### AI Studio无提示词污染
+- 绝大部分大模型平台都会在用户输入的提示词前后，自动添加一些“辅助提示词”，这些提示词会影响模型的回答，且无法查看和修改。AI Studio没有这个问题，可以完全自定义提示词（理论上）。
+- 实测：AI Studio的回答质量远超同模型的gemini cli。
+
+## 2. 功能介绍
+### 网址：https://aistudio.google.com/
+### 界面
+#### 模型选择：Gemini Pro(目前为2.5版本)
+#### 系统提示词
+有意义，但不必过于复杂。越好的模型，提示词就可以越简单。
+#### 温度：0.5 - 1.0
+平时使用1，代码生成时可向下调整（个人使用0.7）
+#### Thinking budget: 最大（32k）
+建议使用最大值
+#### Grounding with Google Search
+事实核查时需打开，但会影响思考质量；平时可关闭
+#### URL context
+同上
+
+### 上传类型
+- 文本 （包括代码）
+- 图片
+- PDF转换
+- 批量文件上传
+
+### 生成类型
+- 文本 (markdown格式)
+- 图片 （svg代码）， 或nano banana直接生成图片
+
+## 3. 使用技巧 （通用于其他旗舰模型）
+### 自动生成系统提示词
+You are an experienced prompt engineer with excellent knowledge of writing prompts for LLM agents. Given users' descriptions, you will thoughtfully analyze their needs, and create fine-grained, well-structured and concise system instructions for the LLM.
+### 上下文大小
+模型准确率和已使用上下文大小成反比。
+- 256k (推荐) （如果使用非gemini模型，建议不超过128k）
+- 500k 以上(不推荐)
+- 提示总结对话历史，另开新对话
+### 同一问题，多次尝试
+### 语言
+- 中文非常优秀，可以直接使用
+- 个人习惯：熟悉的领域使用英文，不熟悉的领域使用中文。
+- 原因：在自己熟悉的专业领域，使用英文提问可以确保关键术语准确无误地匹配模型训练语料（毕竟很多专业资料是英文的）；而在不熟悉领域，用中文提问可以让模型回答得更详细易懂些，方便自己理解。
+
+## 4. 大模型通病
+### 幻觉
+- 降低温度
+- 生成引用
+- 自我搜索验证
+- 事实核查
+### 讨好型人格
+- 提示词加入客观、批判类指令，如：请在你的回答中，扮演一个严谨的、持怀疑态度的领域专家。请指出我请求中可能存在的逻辑漏洞或不合理之处，并优先考虑事实的准确性而非礼貌。
+### 过于乐观
+### 辅助思考，不能代替思考
+
+## 5. Gemini Research
+### 网址：https://gemini.google/overview/deep-research/
+### 功能
+- 文献综述
+- 事实核查
+- 更新背景知识
+### 不足
+- 免费次数过少
+- 基模型较差（flash，而非pro）
+### 免费平替
+- Grok
+- 通义（https://www.tongyi.com/）
+- 豆包
+
+## 6. Q&A
+### Gemini Pro 和 Gemini Research 的区别
+### Temperature（温度）是什么？默认设置是多少？怎么调？
+作用：控制生成的“发散度/创意度”。数值越低越稳健，越高越多样。
+
+范围与默认（Gemini 2.5 Pro）：0.0–2.0，默认 1.0。
+Google Cloud
+
+快速建议
+
+事实问答/代码修复：0.5–0.8（更严谨）
+
+综合问答/说明文：0.8–1.0（通用，默认就好）
+
+头脑风暴/创作：1.0–1.2（更有想象力，也更易跑题）
+### Top-P（核采样）是什么？默认设置是多少？怎么调？
+
+作用：只在“累计概率达到 p 的候选词集合”里采样，切掉长尾不太可能的词。
+
+范围与默认（Gemini 2.5 Pro）：0.0–1.0，默认 0.95。
+Google Cloud
+
+快速建议
+
+想更稳：在不改温度的前提下，把 Top-P 从 0.95 降到 0.9–0.8（更少冷门词）。
+
+想更活：把 Top-P 提到 0.97–1.0（更开放，但更易发散）。
+
+一般先调温度，必要时再小幅微调 Top-P。
+### 如何提示 Gemini 总结对话历史，方便“另开新对话”继续？
+- 请帮我总结我们到目前为止的对话。我需要一个简洁的摘要，包含以下几点：1. 我们讨论的核心问题；2. 已经确定的关键信息和数据；3. 尚未解决的开放性问题。请用要点格式列出，方便我开启一个新的对话继续讨论。
+- Please provide a concise summary of our entire conversation. The goal is to capture all the essential context so I can use this as the context for a new chat and continue our work.
+Please structure the summary with the following sections:
+Main Goal/Objective: What was the primary problem or topic we were discussing?
+Key Information & Decisions: What were the most important facts, findings, or decisions we made?
+Next Steps / Open Questions: What are the remaining questions or the immediate next steps we identified?
+Please use a bullet-point format for clarity.
