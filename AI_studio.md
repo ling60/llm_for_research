@@ -48,7 +48,7 @@
 - 模型特性：选择模型后固定
 - 随机性：通过温度、top-p等参数调节
 - **上下文：调节大模型的核心手段**
-在当前请求中被送入模型、用于决定下一 token 的一切对模型可见的信息（包括但不限于：系统/开发者指令、当前输入、保留下来的对话历史、外部资料与工具结果等）。
+在当前请求中被送入模型、用于决定下一 token 的一切**对模型可见**的信息（包括但不限于：系统/开发者指令、当前输入、保留下来的对话历史、外部资料与工具结果等）。
 
 ### 自动生成系统提示词
 You are an experienced prompt engineer with excellent knowledge of writing prompts for LLM agents. Given users' descriptions, you will thoughtfully analyze their needs, and create fine-grained, well-structured and concise system instructions for the LLM.
@@ -57,6 +57,7 @@ You are an experienced prompt engineer with excellent knowledge of writing promp
 - 256k (推荐) （如果使用非gemini模型，建议不超过128k）
 - 500k 以上(不推荐)
 - 提示总结对话历史，另开新对话
+- 注：上下文大小是以token计数的，1 token 约等于 4 个英文字符或 1 个汉字。
 ### 上下文管理
 - 不同主题要另开新对话
 - branch（分支）功能 (AI Studio独有)
@@ -125,6 +126,9 @@ Main Goal/Objective: What was the primary problem or topic we were discussing?
 Key Information & Decisions: What were the most important facts, findings, or decisions we made?
 Next Steps / Open Questions: What are the remaining questions or the immediate next steps we identified?
 Please use a bullet-point format for clarity.
+
+### 什么是‘Token’，和字符的区别是什么？
+- 简单来说，token 是模型处理文本的基本单位。近似于一个汉字或一个英文单词，但并不完全等价。经验估计，1 token 大约等于 4 个英文字符，或 1 个汉字。具体取决于模型采用的分词方法。
 
 ### 为什么不推荐ChatGPT？
 - 免费版质量太差，且为了通用性，加入过多辅助提示词。感觉不比豆包强太多。
