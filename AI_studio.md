@@ -99,7 +99,7 @@ LLM随机性问题
 
 ---
 ## 5. Gemini Research （免费版）
-### 网址：[Gemini Research](https://gemini.google/overview/deep-research/)
+### 网址：https://gemini.google/overview/deep-research/
 ### 功能
 
 - 文献综述
