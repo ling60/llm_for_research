@@ -6,7 +6,7 @@
 ### 丰富的背景知识
 基本没有对手。这一点对交叉学科以及前沿创新问题尤为重要。GPT5接近。
 ### 1M长上下文
-基本没有对手。目前最接近的是通义qwen3。（https://longbench2.github.io/）
+基本没有对手。目前最接近的是通义qwen3。（https://longbench2.github.io/ ）
 ### 推理深度
 有各种排名，但实测旗舰模型差距不大，包括deepseek。
 ### 免费无限次使用
@@ -51,6 +51,9 @@ You are an experienced prompt engineer with excellent knowledge of writing promp
 - 256k (推荐) （如果使用非gemini模型，建议不超过128k）
 - 500k 以上(不推荐)
 - 提示总结对话历史，另开新对话
+### 上下文管理
+- 不同主题要另开新对话
+- branch（分支）功能 (AI Studio独有)
 ### 同一问题，多次尝试（抽卡）
 LLM随机性问题
 ### 语言
@@ -83,7 +86,7 @@ LLM随机性问题
 ### 免费平替
 #### 具备深度研究功能的旗舰大模型
 - Grok
-- 通义（https://www.tongyi.com/）
+- 通义（ https://www.tongyi.com/ ）
 - 豆包
 
 ---
@@ -120,6 +123,9 @@ Please use a bullet-point format for clarity.
 ### 为什么不推荐ChatGPT？
 - 免费版质量太差，且为了通用性，加入过多辅助提示词。感觉不比豆包强太多。
 - 其新推出的GPT5 codex编程能力极强，但不在本文主题。
+
+### Gemini 2.5 Pro 的缺点？
+- Agent （指令遵循、工具调用）能力太低。在目前（2025年9月）阶段，是同类旗舰模型中最差的。但不影响讨论。
 
 ---
 #### 感谢ChatGPT和Gemini提供的事实核查，以及Q&A部分的撰写帮助。
