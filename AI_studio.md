@@ -12,7 +12,7 @@
 ### 免费无限次使用
 同等质量下没有对手。
 ### AI Studio无提示词污染
-- 绝大部分大模型平台都会在用户输入的提示词前后，自动添加一些“辅助提示词”，这些提示词会影响模型的回答，且无法查看和修改。AI Studio没有这个问题，可以完全自定义提示词（理论上）。
+- 绝大部分大模型平台都会在用户输入的提示词前后，自动添加一些“辅助提示词”，这些提示词会影响模型的回答，且无法查看和修改。AI Studio没有这个问题，可以完全自定义提示词（理论上）。原理参见上下文部分。
 - 实测：AI Studio的回答质量远超同模型的gemini cli（后者也可能受推理窗口限制）。
 
 ---
@@ -44,6 +44,12 @@
 
 ---
 ## 3. 使用技巧 （通用于其他旗舰模型）
+### 大模型的生成＝f（上下文，模型特性，随机性）
+- 模型特性：选择模型后固定
+- 随机性：通过温度、top-p等参数调节
+- **上下文：调节大模型的核心手段**
+在当前请求中被送入模型、用于决定下一 token 的一切对模型可见的信息（包括但不限于：系统/开发者指令、当前输入、保留下来的对话历史、外部资料与工具结果等）。
+
 ### 自动生成系统提示词
 You are an experienced prompt engineer with excellent knowledge of writing prompts for LLM agents. Given users' descriptions, you will thoughtfully analyze their needs, and create fine-grained, well-structured and concise system instructions for the LLM.
 ### 上下文大小
