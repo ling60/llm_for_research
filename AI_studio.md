@@ -114,7 +114,7 @@ LLM随机性问题
 #### 具备深度研究功能的旗舰大模型
 
 - Grok
-- 通义（[Tongyi](https://www.tongyi.com/)）
+- 通义（[Qwen](https://chat.qwen.ai/)）
 - 豆包
 
 ---
