@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从EMX到AI：射频无源器件建模实战教程</title>
+    <!-- 引入 MathJax 用于显示公式 -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- 引入 FontAwesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #0056b3; /* 科技蓝 */
+            --secondary-color: #17a2b8; /* 浅蓝 */
+            --dark-bg: #1e272e;
+            --code-bg: #2d3436;
+            --text-color: #333;
+            --light-gray: #f8f9fa;
+            --accent-color: #fd7e14; /* 橙色强调 */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+        }
+
+        /* 导航栏 */
+        nav {
+            background-color: var(--dark-bg);
+            color: white;
+            padding: 1rem 5%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        nav h1 { margin: 0; font-size: 1.2rem; }
+        nav h1 i { color: var(--secondary-color); margin-right: 10px; }
+        nav ul { list-style: none; display: flex; margin: 0; }
+        nav ul li { margin-left: 20px; }
+        nav ul li a { color: #ccc; text-decoration: none; transition: 0.3s; font-size: 0.9rem; }
+        nav ul li a:hover { color: white; border-bottom: 2px solid var(--secondary-color); }
+
+        /* Hero 区域 */
+        header {
+            background: linear-gradient(135deg, #0056b3 0%, #002a5c 100%);
+            color: white;
+            padding: 4rem 5%;
+            text-align: center;
+        }
+        header h2 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        header p { font-size: 1.2rem; opacity: 0.9; max-width: 800px; margin: 0 auto; }
+        
+        /* 通用布局 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        .section-title h3 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            display: inline-block;
+            background: #f4f7f6;
+            padding: 0 15px;
+            position: relative;
+            z-index: 1;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: #ddd;
+            top: 50%;
+            left: 0;
+            z-index: 0;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        /* 步骤指示器 */
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #ddd;
+            z-index: 0;
+        }
+        .step {
+            position: relative;
+            z-index: 1;
+            background: #f4f7f6;
+            padding: 0 10px;
+            text-align: center;
+            width: 20%;
+        }
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            background: #ddd;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+        }
+        .step.active .step-circle { background: var(--primary-color); }
+        .step-text { font-size: 0.9rem; color: #666; }
+        .step.active .step-text { color: var(--primary-color); font-weight: bold; }
+
+        /* 代码块 */
+        pre {
+            background: var(--code-bg);
+            color: #dcdde1;
+            padding: 1.5rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            border-left: 4px solid var(--accent-color);
+        }
+        .keyword { color: #ff79c6; }
+        .function { color: #8be9fd; }
+        .string { color: #f1fa8c; }
+        .comment { color: #6272a4; }
+
+        /* 对比展示区 */
+        .comparison-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .comparison-box {
+            flex: 1;
+            min-width: 300px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .comparison-box h4 { margin-top: 0; color: var(--primary-color); }
+
+        /* 占位图样式 */
+        .placeholder-img {
+            width: 100%;
+            height: 250px;
+            background-color: #e9ecef;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #6c757d;
+            border-radius: 4px;
+            border: 2px dashed #ced4da;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+        .placeholder-img:hover {
+            border-color: var(--secondary-color);
+            background-color: #e2e6ea;
+        }
+        .img-prompt {
+            font-size: 0.8rem;
+            margin-top: 10px;
+            color: #adb5bd;
+            font-style: italic;
+        }
+
+        /* 互动滑块 */
+        .interactive-demo {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .slider-container {
+            margin: 20px 0;
+        }
+        input[type="range"] {
+            width: 80%;
+        }
+
+        /* 按钮 */
+        .btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover { background: #004494; }
+
+        footer {
+            background: var(--dark-bg);
+            color: #7f8c8d;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <h1><i class="fas fa-microchip"></i> RFIC-AI Designer</h1>
+    <ul>
+        <li><a href="#intro">简介</a></li>
+        <li><a href="#xgboost">基线(XGBoost)</a></li>
+        <li><a href="#mlp">MLP模型</a></li>
+        <li><a href="#pinn">PINN优化</a></li>
+        <li><a href="#tuning">调优</a></li>
+    </ul>
+</nav>
+
+<header id="intro">
+    <h2>TSMC 65nm 差分变压器建模实战</h2>
+    <p>从电磁场仿真到毫秒级推理：面向射频工程师的机器学习教程</p>
+</header>
+
+<div class="container">
+    
+    <!-- 流程概览 -->
+    <div class="step-indicator">
+        <div class="step active">
+            <div class="step-circle">1</div>
+            <div class="step-text">基线模型</div>
+        </div>
+        <div class="step">
+            <div class="step-circle">2</div>
+            <div class="step-text">深度学习</div>
+        </div>
+        <div class="step">
+            <div class="step-circle">3</div>
+            <div class="step-text">物理感知</div>
+        </div>
+        <div class="step">
+            <div class="step-circle">4</div>
+            <div class="step-text">自动调优</div>
+        </div>
+    </div>
+
+    <!-- 数据背景 section removed as requested -->
+
+    <!-- 模型一：XGBoost -->
+    <section id="xgboost">
+        <div class="section-title">
+            <h3>1. 建立工程基准：XGBoost</h3>
+        </div>
+        <div class="card">
+            <p>在动用神经网络这一“重型武器”之前，我们先用 <strong>XGBoost</strong> (梯度提升树) 建立基线。它训练极快，且对非线性关系有很好的捕捉能力。</p>
+            <p>参考 <code>train_xgboost.py</code>，我们将问题视为 8 个独立的回归任务。</p>
+
+            <pre><code><span class="comment"># 代码片段：train_xgboost.py</span>
+<span class="keyword">class</span> XGBoostSParameterPredictor:
+    <span class="keyword">def</span> <span class="function">train</span>(self, data):
+        <span class="comment"># 对 S11_r, S11_i, ... S22_i 分别训练模型</span>
+        s_param_names = [<span class="string">'S11_r'</span>, <span class="string">'S11_i'</span>, ..., <span class="string">'S22_i'</span>]
+        
+        <span class="keyword">for</span> name <span class="keyword">in</span> s_param_names:
+            <span class="comment"># 每个分量对应一个独立的回归树模型</span>
+            model = xgb.train(params, dtrain, num_boost_round=1000)
+            self.models[name] = model</code></pre>
+
+            <div class="comparison-container" style="margin-top:20px;">
+                <div class="comparison-box" style="border-color: #28a745;">
+                    <h4 style="color:#28a745"><i class="fas fa-check"></i> 优点</h4>
+                    <ul>
+                        <li>训练速度极快 (秒级)</li>
+                        <li>不需要数据归一化</li>
+                        <li>可解释性强 (Feature Importance)</li>
+                    </ul>
+                </div>
+                <div class="comparison-box" style="border-color: #dc3545;">
+                    <h4 style="color:#dc3545"><i class="fas fa-times"></i> 缺点</h4>
+                    <ul>
+                        <li>不仅输出不连续 (Tree-based)</li>
+                        <li><strong>不可微分</strong>：无法直接优化 Q 值或 L 值</li>
+                        <li>频率外推能力差</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 模型二：MLP -->
+    <section id="mlp">
+        <div class="section-title">
+            <h3>2. 进入深度学习：Simple MLP</h3>
+        </div>
+        <div class="card">
+            <p>为了解决平滑性和可微性问题，我们使用 PyTorch 构建全连接神经网络 (<code>model.py</code>)。</p>
+            <p><strong>架构：</strong> Input(14) -> Hidden(128) -> Hidden(64) -> Output(8)</p>
+            
+            <!-- 占位图：神经网络架构 -->
+            <div class="placeholder-img" style="height: 150px;">
+                <i class="fas fa-project-diagram fa-3x"></i>
+                <p>图示：全连接神经网络架构图</p>
+                <div class="img-prompt">Prompt: A neural network diagram, input layer with 14 nodes labelled Geometry+Freq, hidden layers, output layer with 8 nodes labelled S-Parameters. Schematic style.</div>
+            </div>
+
+            <p style="margin-top: 20px;"><strong>“黑盒”模型的困境：</strong></p>
+            <p>如果我们只使用 MSE Loss (均方误差) 训练：</p>
+            $$ Loss = \frac{1}{N} \sum (S_{pred} - S_{true})^2 $$
+            <p>结果往往是 S 参数曲线看起来重合得很好，但计算出来的 <strong>Q 值 (品质因数)</strong> 误差巨大。这是因为 Q 值对 S 参数的微小导数变化非常敏感。</p>
+            $$ Q = \frac{\text{Im}(Z_{diff})}{\text{Re}(Z_{diff})} $$
+        </div>
+    </section>
+
+    <!-- 模型三：PINN -->
+    <section id="pinn">
+        <div class="section-title">
+            <h3>3. 物理感知神经网络 (PINN)</h3>
+        </div>
+        <div class="card" style="border-left-color: var(--accent-color);">
+            <h4><i class="fas fa-magic"></i> 核心思想：把电路公式写进 Loss Function</h4>
+            <p>这是本项目的特色部分 (<code>loss_functions.py</code>)。我们不再只盯着 S 参数，而是要求模型预测出的 S 参数推导出的 $L$ 和 $Q$ 也必须准确。</p>
+            
+            <pre><code><span class="comment"># 代码片段：loss_functions.py / CombinedLoss</span>
+<span class="keyword">class</span> CombinedLoss(nn.Module):
+    <span class="keyword">def</span> <span class="function">forward</span>(self, S_pred, S_true, freq):
+        <span class="comment"># 1. 基础 S 参数误差</span>
+        loss_s = mse_loss(S_pred, S_true)
+        
+        <span class="comment"># 2. 物理量计算 (在计算图中，可微分！)</span>
+        <span class="comment"># 自动调用 KPICalculator 将 S -> Z -> L, Q</span>
+        kpi_pred = self.kpi_calculator(S_pred, freq)
+        kpi_true = self.kpi_calculator(S_true, freq)
+        
+        <span class="comment"># 3. 关键性能指标 (KPI) 误差</span>
+        loss_L = mse_loss(kpi_pred[<span class="string">'L'</span>], kpi_true[<span class="string">'L'</span>])
+        loss_Q = mse_loss(kpi_pred[<span class="string">'Q'</span>], kpi_true[<span class="string">'Q'</span>])
+        
+        <span class="comment"># 4. 总损失：物理感知</span>
+        <span class="keyword">return</span> loss_s + w_kpi * (loss_L + loss_Q)</code></pre>
+
+            <div class="interactive-demo">
+                <h4><i class="fas fa-sliders-h"></i> 互动演示：Loss 权重的影响</h4>
+                <p>调整 <code>w_kpi</code> (KPI 权重)，观察对 Q 值预测的影响</p>
+                
+                <div class="slider-container">
+                    <label>w_kpi = <span id="weightValue">0</span> (纯数据驱动)</label><br>
+                    <input type="range" min="0" max="1" step="0.5" value="0" id="weightSlider" oninput="updateDemo()">
+                </div>
+
+                <div style="display: flex; justify-content: center; gap: 20px; align-items: center;">
+                    <!-- 模拟图表 -->
+                    <div id="chartContainer" style="width: 300px; height: 200px; background: white; border-radius: 4px; position: relative; padding: 10px;">
+                        <!-- 这里用简单的 CSS 绘制示意图 -->
+                        <div style="position:absolute; top:10px; left:10px; font-size:12px; color:#333; font-weight:bold;">Q-Factor vs Freq</div>
+                        <!-- 真实值曲线 (固定) -->
+                        <svg width="280" height="180" style="position: absolute; top: 10px; left: 10px;">
+                            <!-- 坐标轴 -->
+                            <line x1="10" y1="170" x2="270" y2="170" stroke="black" stroke-width="1"/>
+                            <line x1="10" y1="10" x2="10" y2="170" stroke="black" stroke-width="1"/>
+                            <!-- 真实值 (平滑的倒抛物线) -->
+                            <path d="M 10 170 Q 140 10 270 170" stroke="black" stroke-width="2" fill="none" stroke-dasharray="4"/>
+                            
+                            <!-- 预测值 (动态变化) -->
+                            <path id="predPath" d="M 10 170 Q 140 10 270 170" stroke="red" stroke-width="2" fill="none"/>
+                        </svg>
+                        <div style="position:absolute; bottom:5px; right:10px; font-size:10px; color:black;">--- True</div>
+                        <div style="position:absolute; bottom:15px; right:10px; font-size:10px; color:red;">— Pred</div>
+                    </div>
+                    <div style="text-align: left; max-width: 300px;">
+                        <p id="demoText" style="font-size: 0.9rem;">当前模型仅关注 S 参数拟合。Q 值（红色）充满噪声且在峰值处误差巨大，因为 Q 对相位极度敏感。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 调优：Optuna -->
+    <section id="tuning">
+        <div class="section-title">
+            <h3>4. 自动化调优：Optuna</h3>
+        </div>
+        <div class="card">
+            <p>模型有多少层？学习率设多少？$w_{kpi}$ 设为 0.1 还是 1.0？手动尝试效率太低。</p>
+            <p>我们使用 <strong>Optuna</strong> 框架进行超参数搜索 (<code>tune_nn.py</code>)。它就像 ADS 中的 Optimizer，自动寻找 Loss 最低的参数组合。</p>
+            
+            <div class="comparison-container">
+                <div class="comparison-box">
+                    <h4><i class="fas fa-search"></i> 搜索空间</h4>
+                    <ul>
+                        <li><code>lr</code>: 1e-4 ~ 1e-2 (对数分布)</li>
+                        <li><code>batch_size</code>: 128, 256, 512</li>
+                        <li><code>w_kpi</code>: 0.0 ~ 2.0</li>
+                        <li><code>hidden_layers</code>: [64, 64] ~ [512, 512, 512]</li>
+                    </ul>
+                </div>
+                <div class="comparison-box">
+                    <h4><i class="fas fa-chart-line"></i> 优化目标</h4>
+                    <p>最大化综合评分：</p>
+                    $$ \text{Objective} = \alpha \cdot \text{MSE}_S + \beta \cdot \text{MAPE}_L + \gamma \cdot \text{MAPE}_Q $$
+                    <p>Optuna 会自动平衡 S 参数准确度和物理量准确度。</p>
+                </div>
+            </div>
+
+            <!-- 占位图：Optuna 结果 -->
+            <div class="placeholder-img" style="margin-top: 20px;">
+                <i class="fas fa-network-wired fa-3x"></i>
+                <p>图示：Optuna 平行坐标图 (Parallel Coordinate Plot)</p>
+                <div class="img-prompt">Prompt: An Optuna parallel coordinate plot showing hyperparameters lines connecting learning rate, layers, and objective value. Data visualization style.</div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p>&copy; 2023 RFIC-AI Designer Tutorial. 基于 Reverse Designer 项目生成。</p>
+    <p>Empowering RF Engineers with Artificial Intelligence.</p>
+</footer>
+
+<script>
+    // 简单的交互逻辑
+    function updateDemo() {
+        const val = document.getElementById('weightSlider').value;
+        const textLabel = document.getElementById('weightValue');
+        const demoText = document.getElementById('demoText');
+        const predPath = document.getElementById('predPath');
+        
+        textLabel.innerText = val;
+
+        if (val == 0) {
+            // 噪声很大的曲线
+            predPath.setAttribute('d', "M 10 170 Q 50 160 80 120 T 140 30 T 200 120 T 270 170"); 
+            // 简单的模拟噪声效果，实际 SVG path 应该更复杂
+            // 这里为了简单，我们仅仅偏移曲线
+            predPath.setAttribute('d', "M 10 170 C 40 160, 60 180, 80 140 S 120 50, 140 10 S 180 60, 200 130 S 240 160, 270 180");
+            demoText.innerText = "状态：XGBoost 或 基础 MLP。Q 值（红色）充满噪声，峰值偏移严重，这是因为模型没有学到导数关系。";
+        } else if (val == 0.5) {
+            // 稍微好一点
+             predPath.setAttribute('d', "M 10 170 Q 130 0 270 160");
+             demoText.innerText = "状态：PINN (低权重)。S 参数依然很准，Q 值曲线开始变得平滑，但在高 Q 值区域仍有误差。";
+        } else {
+            // 非常贴合
+            predPath.setAttribute('d', "M 10 170 Q 140 10 270 170");
+            demoText.innerText = "状态：PINN (优化后)。模型被迫同时满足 S 参数和 Q 值公式，预测曲线（红色）与真实物理特性完美重合。";
+        }
+    }
+</script>
+
+</body>
+</html>
