@@ -1,485 +1,687 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>从EMX到AI：射频无源器件建模实战教程</title>
-    <!-- 引入 MathJax 用于显示公式 -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <!-- 引入 FontAwesome 图标 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>RF工程师的AI实战指南：TSMC 65n 差分变压器建模</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js for Interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Prism.js for Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/phosphor-icons"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        rf: {
+                            base: '#0f172a', // Slate 900
+                            card: '#1e293b', // Slate 800
+                            accent: '#38bdf8', // Sky 400
+                            secondary: '#6366f1', // Indigo 500
+                            success: '#10b981',
+                            warning: '#f59e0b',
+                            danger: '#ef4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
     <style>
-        :root {
-            --primary-color: #0056b3; /* 科技蓝 */
-            --secondary-color: #17a2b8; /* 浅蓝 */
-            --dark-bg: #1e272e;
-            --code-bg: #2d3436;
-            --text-color: #333;
-            --light-gray: #f8f9fa;
-            --accent-color: #fd7e14; /* 橙色强调 */
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f6;
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
         }
-
-        /* 导航栏 */
-        nav {
-            background-color: var(--dark-bg);
-            color: white;
-            padding: 1rem 5%;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        nav h1 { margin: 0; font-size: 1.2rem; }
-        nav h1 i { color: var(--secondary-color); margin-right: 10px; }
-        nav ul { list-style: none; display: flex; margin: 0; }
-        nav ul li { margin-left: 20px; }
-        nav ul li a { color: #ccc; text-decoration: none; transition: 0.3s; font-size: 0.9rem; }
-        nav ul li a:hover { color: white; border-bottom: 2px solid var(--secondary-color); }
-
-        /* Hero 区域 */
-        header {
-            background: linear-gradient(135deg, #0056b3 0%, #002a5c 100%);
-            color: white;
-            padding: 4rem 5%;
-            text-align: center;
-        }
-        header h2 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        header p { font-size: 1.2rem; opacity: 0.9; max-width: 800px; margin: 0 auto; }
-        
-        /* 通用布局 */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 3rem;
-            position: relative;
-        }
-        .section-title h3 {
-            font-size: 2rem;
-            color: var(--primary-color);
-            display: inline-block;
-            background: #f4f7f6;
-            padding: 0 15px;
-            position: relative;
-            z-index: 1;
-        }
-        .section-title::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 1px;
-            background: #ddd;
-            top: 50%;
-            left: 0;
-            z-index: 0;
-        }
-
-        /* 卡片样式 */
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border-left: 5px solid var(--primary-color);
-        }
-
-        /* 步骤指示器 */
-        .step-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 3rem;
-            position: relative;
-        }
-        .step-indicator::before {
-            content: '';
-            position: absolute;
-            top: 15px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: #ddd;
-            z-index: 0;
-        }
-        .step {
-            position: relative;
-            z-index: 1;
-            background: #f4f7f6;
-            padding: 0 10px;
-            text-align: center;
-            width: 20%;
-        }
-        .step-circle {
-            width: 30px;
-            height: 30px;
-            background: #ddd;
-            border-radius: 50%;
-            margin: 0 auto 10px;
-            line-height: 30px;
-            color: white;
-            font-weight: bold;
-        }
-        .step.active .step-circle { background: var(--primary-color); }
-        .step-text { font-size: 0.9rem; color: #666; }
-        .step.active .step-text { color: var(--primary-color); font-weight: bold; }
-
-        /* 代码块 */
-        pre {
-            background: var(--code-bg);
-            color: #dcdde1;
-            padding: 1.5rem;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-family: 'Consolas', 'Monaco', monospace;
-            border-left: 4px solid var(--accent-color);
-        }
-        .keyword { color: #ff79c6; }
-        .function { color: #8be9fd; }
-        .string { color: #f1fa8c; }
-        .comment { color: #6272a4; }
-
-        /* 对比展示区 */
-        .comparison-container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .comparison-box {
-            flex: 1;
-            min-width: 300px;
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #eee;
-        }
-        .comparison-box h4 { margin-top: 0; color: var(--primary-color); }
-
-        /* 占位图样式 */
-        .placeholder-img {
-            width: 100%;
-            height: 250px;
-            background-color: #e9ecef;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #6c757d;
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
             border-radius: 4px;
-            border: 2px dashed #ced4da;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-            transition: 0.3s;
         }
-        .placeholder-img:hover {
-            border-color: var(--secondary-color);
-            background-color: #e2e6ea;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
         }
-        .img-prompt {
-            font-size: 0.8rem;
-            margin-top: 10px;
-            color: #adb5bd;
-            font-style: italic;
-        }
-
-        /* 互动滑块 */
-        .interactive-demo {
-            background: #2c3e50;
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .slider-container {
-            margin: 20px 0;
-        }
-        input[type="range"] {
-            width: 80%;
-        }
-
-        /* 按钮 */
-        .btn {
-            display: inline-block;
-            background: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: 0.3s;
-            border: none;
-            cursor: pointer;
-        }
-        .btn:hover { background: #004494; }
-
-        footer {
-            background: var(--dark-bg);
-            color: #7f8c8d;
-            text-align: center;
-            padding: 2rem;
-            margin-top: 4rem;
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
-<body>
+<body class="bg-rf-base text-slate-300 font-sans antialiased selection:bg-rf-accent selection:text-rf-base">
 
-<nav>
-    <h1><i class="fas fa-microchip"></i> RFIC-AI Designer</h1>
-    <ul>
-        <li><a href="#intro">简介</a></li>
-        <li><a href="#xgboost">基线(XGBoost)</a></li>
-        <li><a href="#mlp">MLP模型</a></li>
-        <li><a href="#pinn">PINN优化</a></li>
-        <li><a href="#tuning">调优</a></li>
-    </ul>
-</nav>
-
-<header id="intro">
-    <h2>TSMC 65nm 差分变压器建模实战</h2>
-    <p>从电磁场仿真到毫秒级推理：面向射频工程师的机器学习教程</p>
-</header>
-
-<div class="container">
-    
-    <!-- 流程概览 -->
-    <div class="step-indicator">
-        <div class="step active">
-            <div class="step-circle">1</div>
-            <div class="step-text">基线模型</div>
-        </div>
-        <div class="step">
-            <div class="step-circle">2</div>
-            <div class="step-text">深度学习</div>
-        </div>
-        <div class="step">
-            <div class="step-circle">3</div>
-            <div class="step-text">物理感知</div>
-        </div>
-        <div class="step">
-            <div class="step-circle">4</div>
-            <div class="step-text">自动调优</div>
-        </div>
-    </div>
-
-    <!-- 数据背景 section removed as requested -->
-
-    <!-- 模型一：XGBoost -->
-    <section id="xgboost">
-        <div class="section-title">
-            <h3>1. 建立工程基准：XGBoost</h3>
-        </div>
-        <div class="card">
-            <p>在动用神经网络这一“重型武器”之前，我们先用 <strong>XGBoost</strong> (梯度提升树) 建立基线。它训练极快，且对非线性关系有很好的捕捉能力。</p>
-            <p>参考 <code>train_xgboost.py</code>，我们将问题视为 8 个独立的回归任务。</p>
-
-            <pre><code><span class="comment"># 代码片段：train_xgboost.py</span>
-<span class="keyword">class</span> XGBoostSParameterPredictor:
-    <span class="keyword">def</span> <span class="function">train</span>(self, data):
-        <span class="comment"># 对 S11_r, S11_i, ... S22_i 分别训练模型</span>
-        s_param_names = [<span class="string">'S11_r'</span>, <span class="string">'S11_i'</span>, ..., <span class="string">'S22_i'</span>]
-        
-        <span class="keyword">for</span> name <span class="keyword">in</span> s_param_names:
-            <span class="comment"># 每个分量对应一个独立的回归树模型</span>
-            model = xgb.train(params, dtrain, num_boost_round=1000)
-            self.models[name] = model</code></pre>
-
-            <div class="comparison-container" style="margin-top:20px;">
-                <div class="comparison-box" style="border-color: #28a745;">
-                    <h4 style="color:#28a745"><i class="fas fa-check"></i> 优点</h4>
-                    <ul>
-                        <li>训练速度极快 (秒级)</li>
-                        <li>不需要数据归一化</li>
-                        <li>可解释性强 (Feature Importance)</li>
-                    </ul>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <i class="ph-bold ph-circuitry text-rf-accent text-2xl"></i>
+                    <span class="font-bold text-white text-lg tracking-tight">RF<span class="text-rf-accent">.AI</span> Lab</span>
                 </div>
-                <div class="comparison-box" style="border-color: #dc3545;">
-                    <h4 style="color:#dc3545"><i class="fas fa-times"></i> 缺点</h4>
-                    <ul>
-                        <li>不仅输出不连续 (Tree-based)</li>
-                        <li><strong>不可微分</strong>：无法直接优化 Q 值或 L 值</li>
-                        <li>频率外推能力差</li>
-                    </ul>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#intro" class="hover:text-rf-accent px-3 py-2 rounded-md text-sm font-medium transition-colors">思维转换</a>
+                        <a href="#models" class="hover:text-rf-accent px-3 py-2 rounded-md text-sm font-medium transition-colors">模型选择</a>
+                        <a href="#training" class="hover:text-rf-accent px-3 py-2 rounded-md text-sm font-medium transition-colors">训练诊断</a>
+                        <a href="#tuning" class="hover:text-rf-accent px-3 py-2 rounded-md text-sm font-medium transition-colors">调参优化</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="intro" class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <span class="inline-block py-1 px-3 rounded-full bg-rf-accent/10 text-rf-accent text-xs font-semibold tracking-wider mb-4 border border-rf-accent/20">TSMC 65n 差分变压器实战</span>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-6 leading-tight">
+                从 <span class="text-transparent bg-clip-text bg-gradient-to-r from-rf-accent to-rf-secondary">Smith Chart</span> 到 <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-rf-secondary to-purple-400">Gradient Descent</span>
+            </h1>
+            <p class="max-w-2xl mx-auto text-lg text-slate-400">
+                面向射频工程师的机器学习教程。我们将使用已生成的 Geo+Freq 数据集，构建能够替代 EMX 仿真的秒级 S 参数预测模型。
+            </p>
+        </div>
+
+        <!-- Interactive Concept Mapping -->
+        <div x-data="{ 
+            active: 'schematic',
+            items: {
+                schematic: { rf: '电路原理图 (Schematic)', ai: '模型架构 (Model Architecture)', desc: '决定了系统的连接方式和基本能力。' },
+                params: { rf: '器件参数 (W, L, S)', ai: '权重与偏置 (Weights & Biases)', desc: '模型内部需要被优化/求解的数值。' },
+                setup: { rf: '仿真器设置 (Simulation Setup)', ai: '超参数 (Hyperparameters)', desc: '人为设定的配置，如学习率、层数。' },
+                goal: { rf: '优化目标 (Optimization Goal)', ai: '损失函数 (Loss Function)', desc: '衡量当前结果与理想结果差距的标尺。' },
+                corner: { rf: 'PVT Corner 验证', ai: '验证集/测试集 (Validation/Test)', desc: '测试系统在未见过的情况下的表现。' }
+            }
+        }" class="bg-rf-card rounded-2xl border border-slate-700/50 p-1 shadow-2xl max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-0 md:divide-x divide-slate-700">
+                <!-- Left: RF World -->
+                <div class="p-6">
+                    <h3 class="text-rf-accent font-bold mb-4 flex items-center gap-2"><i class="ph-bold ph-wave-sine"></i> RF 领域概念</h3>
+                    <div class="space-y-2">
+                        <template x-for="(val, key) in items">
+                            <button @mouseenter="active = key" 
+                                    :class="active === key ? 'bg-slate-700 border-rf-accent text-white' : 'border-transparent text-slate-400 hover:bg-slate-800'"
+                                    class="w-full text-left px-4 py-3 rounded-lg border-l-4 transition-all duration-200 text-sm font-medium"
+                                    x-text="val.rf"></button>
+                        </template>
+                    </div>
+                </div>
+                <!-- Right: AI World -->
+                <div class="p-6 flex flex-col justify-center bg-gradient-to-br from-rf-card to-slate-800/50">
+                    <h3 class="text-rf-secondary font-bold mb-4 flex items-center gap-2"><i class="ph-bold ph-brain"></i> AI 对应概念</h3>
+                    <div class="h-32 flex flex-col justify-center">
+                        <div class="text-xl font-bold text-white mb-2" x-text="items[active].ai"></div>
+                        <p class="text-slate-400 text-sm leading-relaxed" x-text="items[active].desc"></p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 模型二：MLP -->
-    <section id="mlp">
-        <div class="section-title">
-            <h3>2. 进入深度学习：Simple MLP</h3>
-        </div>
-        <div class="card">
-            <p>为了解决平滑性和可微性问题，我们使用 PyTorch 构建全连接神经网络 (<code>model.py</code>)。</p>
-            <p><strong>架构：</strong> Input(14) -> Hidden(128) -> Hidden(64) -> Output(8)</p>
-            
-            <!-- 占位图：神经网络架构 -->
-            <div class="placeholder-img" style="height: 150px;">
-                <i class="fas fa-project-diagram fa-3x"></i>
-                <p>图示：全连接神经网络架构图</p>
-                <div class="img-prompt">Prompt: A neural network diagram, input layer with 14 nodes labelled Geometry+Freq, hidden layers, output layer with 8 nodes labelled S-Parameters. Schematic style.</div>
-            </div>
+    <!-- Model Selection Section -->
+    <section id="models" class="py-20 bg-slate-800/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-white mb-2">1. 基线模型选择</h2>
+            <p class="text-slate-400 mb-10">无需“杀鸡用牛刀”。根据数据结构和物理需求选择架构。</p>
 
-            <p style="margin-top: 20px;"><strong>“黑盒”模型的困境：</strong></p>
-            <p>如果我们只使用 MSE Loss (均方误差) 训练：</p>
-            $$ Loss = \frac{1}{N} \sum (S_{pred} - S_{true})^2 $$
-            <p>结果往往是 S 参数曲线看起来重合得很好，但计算出来的 <strong>Q 值 (品质因数)</strong> 误差巨大。这是因为 Q 值对 S 参数的微小导数变化非常敏感。</p>
-            $$ Q = \frac{\text{Im}(Z_{diff})}{\text{Re}(Z_{diff})} $$
+            <div x-data="{ tab: 'xgboost' }" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Tabs List -->
+                <div class="lg:col-span-1 space-y-4">
+                    <button @click="tab = 'xgboost'" 
+                            :class="tab === 'xgboost' ? 'ring-2 ring-rf-accent bg-rf-card' : 'bg-rf-card/50 hover:bg-rf-card'"
+                            class="w-full text-left p-6 rounded-xl transition-all duration-200 group relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-rf-success"></div>
+                        <h3 class="text-white font-bold text-lg mb-1 group-hover:text-rf-accent transition-colors">XGBoost</h3>
+                        <p class="text-slate-400 text-sm">经典机器学习代表</p>
+                    </button>
+
+                    <button @click="tab = 'mlp'" 
+                            :class="tab === 'mlp' ? 'ring-2 ring-rf-secondary bg-rf-card' : 'bg-rf-card/50 hover:bg-rf-card'"
+                            class="w-full text-left p-6 rounded-xl transition-all duration-200 group relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-rf-secondary"></div>
+                        <h3 class="text-white font-bold text-lg mb-1 group-hover:text-rf-secondary transition-colors">MLP (神经网络)</h3>
+                        <p class="text-slate-400 text-sm">物理信息建模首选</p>
+                    </button>
+
+                    <button @click="tab = 'others'" 
+                            :class="tab === 'others' ? 'ring-2 ring-purple-500 bg-rf-card' : 'bg-rf-card/50 hover:bg-rf-card'"
+                            class="w-full text-left p-6 rounded-xl transition-all duration-200 group relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
+                        <h3 class="text-white font-bold text-lg mb-1 group-hover:text-purple-400 transition-colors">CNN / Transformer</h3>
+                        <p class="text-slate-400 text-sm">高级架构</p>
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="lg:col-span-2 bg-rf-card rounded-2xl border border-slate-700/50 p-8 relative min-h-[400px]">
+                    
+                    <!-- XGBoost Content -->
+                    <div x-show="tab === 'xgboost'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold text-white">Gradient Boosting Trees</h3>
+                            <span class="px-3 py-1 bg-rf-success/20 text-rf-success text-xs rounded-full border border-rf-success/30">Baseline 首选</span>
+                        </div>
+                        <p class="text-slate-300 mb-6 leading-relaxed">
+                            XGBoost 类似于成千上万个“查找表”的加权组合。它非常适合处理这种表格型数据（几何参数 → S参数）。
+                        </p>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-slate-900/50 p-4 rounded-lg">
+                                <h4 class="text-rf-success font-bold text-sm mb-2"><i class="ph-bold ph-check-circle"></i> 优点</h4>
+                                <ul class="text-sm text-slate-400 space-y-1 list-disc list-inside">
+                                    <li>训练快 </li>
+                                    <li>对特征归一化不敏感</li>
+                                    <li>可输出特征重要性排序</li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-900/50 p-4 rounded-lg">
+                                <h4 class="text-rf-danger font-bold text-sm mb-2"><i class="ph-bold ph-x-circle"></i> 缺点</h4>
+                                <ul class="text-sm text-slate-400 space-y-1 list-disc list-inside">
+                                    <li><b>不可微</b>（致命弱点）</li>
+                                    <li>无法嵌入物理公式 (Q=Im/Re)</li>
+                                    <li>外推能力较差</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                            <code class="text-xs text-rf-accent font-mono">train_xgboost.py</code>
+                            <p class="text-sm text-slate-400 mt-2">使用此脚本快速验证数据质量。如果 XGBoost 效果很差，通常意味着数据本身有问题，而非模型问题。</p>
+                        </div>
+                    </div>
+
+                    <!-- MLP Content -->
+                    <div x-show="tab === 'mlp'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold text-white">Multi-Layer Perceptron</h3>
+                            <span class="px-3 py-1 bg-rf-secondary/20 text-rf-secondary text-xs rounded-full border border-rf-secondary/30">物理建模核心</span>
+                        </div>
+                        <p class="text-slate-300 mb-6 leading-relaxed">
+                            全连接神经网络。虽然结构简单，但它的核心在于<b>可微分性 (Differentiability)</b>。这意味着我们可以将 Q 值公式写入 Loss Function。
+                        </p>
+                        <div class="mb-6 bg-gradient-to-r from-slate-900 to-slate-800 p-5 rounded-lg border-l-4 border-rf-secondary">
+                            <div class="text-xs text-slate-500 mb-1 uppercase tracking-widest font-bold">Physics-Informed Loss</div>
+                            <div class="font-mono text-sm text-slate-200">
+                                $$ Loss = w_s \cdot MSE(S) + w_{kpi} \cdot MSE(KPI(S)) $$
+                            </div>
+                            <p class="text-xs text-slate-400 mt-2">模型被迫不仅拟合 S 参数曲线，还要拟合其导数特性（Q值），从而解决传统 AI 模型 Q 值预测不准的痛点。</p>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                            <code class="text-xs text-rf-secondary font-mono">model.py (SimpleMLP)</code>
+                            <p class="text-sm text-slate-400 mt-2">推荐作为最终交付模型，因为其极易导出并在电路仿真环境中部署。</p>
+                        </div>
+                    </div>
+
+                    <!-- Others Content -->
+                    <div x-show="tab === 'others'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold text-white">CNN & Transformer</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="border-b border-slate-700 pb-4">
+                                <h4 class="text-purple-400 font-bold mb-1">CNN (卷积神经网络)</h4>
+                                <p class="text-sm text-slate-400">
+                                    <span class="text-white">适用场景：</span> 如果输入是 GDSII 版图图像（像素级），而非提取好的 L/W/S 参数。
+                                </p>
+                            </div>
+                            <div>
+                                <h4 class="text-purple-400 font-bold mb-1">Transformer</h4>
+                                <p class="text-sm text-slate-400">
+                                    <span class="text-white">适用场景：</span> 处理序列数据。如果我们需要一次性预测整个宽频带的响应（序列到序列），而非逐频点预测，可以考虑 Transformer。但在当前 Geo+Freq → S 的任务中，由于数据结构简单，Transformer 往往性价比不高（过拟合风险大，训练慢）。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- 模型三：PINN -->
-    <section id="pinn">
-        <div class="section-title">
-            <h3>3. 物理感知神经网络 (PINN)</h3>
+    <!-- Training Dynamics Section -->
+    <!-- Training Dynamics Section (Refined) -->
+    <section id="training" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-12">
+            <h2 class="text-3xl font-bold text-white mb-4">2. 训练诊断：模型“不收敛”怎么办？</h2>
+            <p class="text-lg text-slate-400 max-w-3xl">
+                如同电路仿真会遇到由步长设置或模型参数引起的“不收敛”一样，模型训练也有它的典型病态。
+                我们需要像调试电路一样调试模型。
+            </p>
         </div>
-        <div class="card" style="border-left-color: var(--accent-color);">
-            <h4><i class="fas fa-magic"></i> 核心思想：把电路公式写进 Loss Function</h4>
-            <p>这是本项目的特色部分 (<code>loss_functions.py</code>)。我们不再只盯着 S 参数，而是要求模型预测出的 S 参数推导出的 $L$ 和 $Q$ 也必须准确。</p>
-            
-            <pre><code><span class="comment"># 代码片段：loss_functions.py / CombinedLoss</span>
-<span class="keyword">class</span> CombinedLoss(nn.Module):
-    <span class="keyword">def</span> <span class="function">forward</span>(self, S_pred, S_true, freq):
-        <span class="comment"># 1. 基础 S 参数误差</span>
-        loss_s = mse_loss(S_pred, S_true)
-        
-        <span class="comment"># 2. 物理量计算 (在计算图中，可微分！)</span>
-        <span class="comment"># 自动调用 KPICalculator 将 S -> Z -> L, Q</span>
-        kpi_pred = self.kpi_calculator(S_pred, freq)
-        kpi_true = self.kpi_calculator(S_true, freq)
-        
-        <span class="comment"># 3. 关键性能指标 (KPI) 误差</span>
-        loss_L = mse_loss(kpi_pred[<span class="string">'L'</span>], kpi_true[<span class="string">'L'</span>])
-        loss_Q = mse_loss(kpi_pred[<span class="string">'Q'</span>], kpi_true[<span class="string">'Q'</span>])
-        
-        <span class="comment"># 4. 总损失：物理感知</span>
-        <span class="keyword">return</span> loss_s + w_kpi * (loss_L + loss_Q)</code></pre>
 
-            <div class="interactive-demo">
-                <h4><i class="fas fa-sliders-h"></i> 互动演示：Loss 权重的影响</h4>
-                <p>调整 <code>w_kpi</code> (KPI 权重)，观察对 Q 值预测的影响</p>
+        <div class="space-y-12">
+            
+            <!-- 1. Overfitting vs Underfitting -->
+            <div class="bg-rf-card rounded-2xl border border-slate-700 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-700 bg-slate-800/50 flex items-center gap-2">
+                    <i class="ph-bold ph-scales text-rf-accent text-xl"></i>
+                    <h3 class="text-xl font-bold text-white">1. 过拟合 (Overfitting) vs. 欠拟合 (Underfitting)</h3>
+                </div>
                 
-                <div class="slider-container">
-                    <label>w_kpi = <span id="weightValue">0</span> (纯数据驱动)</label><br>
-                    <input type="range" min="0" max="1" step="0.5" value="0" id="weightSlider" oninput="updateDemo()">
+                <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-700">
+                    
+                    <!-- Underfitting -->
+                    <div class="p-8 hover:bg-slate-800/30 transition-colors">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-2 py-1 bg-yellow-500/10 text-yellow-500 text-xs font-bold rounded uppercase border border-yellow-500/20">Underfitting</span>
+                            <span class="text-slate-500 text-sm">模型太简单</span>
+                        </div>
+                        <div class="mb-6">
+                            <h4 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">RF 视角类比</h4>
+                            <p class="text-slate-400 text-sm leading-relaxed">
+                                就像用 <span class="text-white font-medium">一阶多项式</span> 去拟合一个复杂的 <span class="text-white font-medium">LC 谐振曲线</span>。模型容量不足，根本抓不住谐振峰和带宽特征。
+                            </p>
+                        </div>
+                        <div class="bg-slate-900/80 rounded-lg p-4 border border-slate-700/50">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-slate-500">Train Loss</span>
+                                <span class="text-red-400 font-mono">High ↑</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-500">Val Loss</span>
+                                <span class="text-red-400 font-mono">High ↑</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overfitting -->
+                    <div class="p-8 hover:bg-slate-800/30 transition-colors">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-2 py-1 bg-red-500/10 text-red-500 text-xs font-bold rounded uppercase border border-red-500/20">Overfitting</span>
+                            <span class="text-slate-500 text-sm">死记硬背</span>
+                        </div>
+                        <div class="mb-6">
+                            <h4 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">RF 视角类比</h4>
+                            <p class="text-slate-400 text-sm leading-relaxed">
+                                就像用 <span class="text-white font-medium">100阶多项式</span> 拟合曲线。它把仿真产生的 <span class="text-white font-medium">数值噪声 (Mesh Noise)</span> 都拟合进去了，导致在平滑频段出现非物理的震荡。
+                            </p>
+                        </div>
+                        <div class="bg-slate-900/80 rounded-lg p-4 border border-slate-700/50">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-slate-500">Train Loss</span>
+                                <span class="text-emerald-400 font-mono">Low ↓</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-500">Val Loss</span>
+                                <span class="text-red-400 font-mono">High ↑ (泛化差)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="display: flex; justify-content: center; gap: 20px; align-items: center;">
-                    <!-- 模拟图表 -->
-                    <div id="chartContainer" style="width: 300px; height: 200px; background: white; border-radius: 4px; position: relative; padding: 10px;">
-                        <!-- 这里用简单的 CSS 绘制示意图 -->
-                        <div style="position:absolute; top:10px; left:10px; font-size:12px; color:#333; font-weight:bold;">Q-Factor vs Freq</div>
-                        <!-- 真实值曲线 (固定) -->
-                        <svg width="280" height="180" style="position: absolute; top: 10px; left: 10px;">
-                            <!-- 坐标轴 -->
-                            <line x1="10" y1="170" x2="270" y2="170" stroke="black" stroke-width="1"/>
-                            <line x1="10" y1="10" x2="10" y2="170" stroke="black" stroke-width="1"/>
-                            <!-- 真实值 (平滑的倒抛物线) -->
-                            <path d="M 10 170 Q 140 10 270 170" stroke="black" stroke-width="2" fill="none" stroke-dasharray="4"/>
+                <!-- Solutions Bar -->
+                <div class="px-8 py-6 bg-slate-800/80 border-t border-slate-700 flex flex-col md:flex-row gap-6">
+                    <div class="flex-1 flex gap-3">
+                        <i class="ph-bold ph-toggle-left text-rf-secondary text-2xl mt-1"></i>
+                        <div>
+                            <span class="text-white font-bold block text-sm">Dropout</span>
+                            <span class="text-xs text-slate-500 font-mono mb-1 block">model.py</span>
+                            <p class="text-xs text-slate-400">训练时随机“关掉”一部分神经元，防止模型依赖特定路径。</p>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex gap-3">
+                        <i class="ph-bold ph-hand-palm text-rf-secondary text-2xl mt-1"></i>
+                        <div>
+                            <span class="text-white font-bold block text-sm">Early Stopping</span>
+                            <span class="text-xs text-slate-500 font-mono mb-1 block">train_nn.py</span>
+                            <p class="text-xs text-slate-400">发现验证集 Loss 不再下降时，提前终止训练（类似电路优化的 Stop Criteria）。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Gradient Problems -->
+            <div class="relative group">
+                <!-- Glowing effect -->
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
+                
+                <div class="relative bg-rf-card rounded-2xl border border-slate-700 p-8">
+                    <div class="flex flex-col lg:flex-row gap-8">
+                        
+                        <!-- Left: Concept -->
+                        <div class="lg:w-1/2 space-y-6">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+                                    <i class="ph-bold ph-lightning text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">2. 梯度消失与爆炸 (Vanishing/Exploding)</h3>
+                            </div>
                             
-                            <!-- 预测值 (动态变化) -->
-                            <path id="predPath" d="M 10 170 Q 140 10 270 170" stroke="red" stroke-width="2" fill="none"/>
-                        </svg>
-                        <div style="position:absolute; bottom:5px; right:10px; font-size:10px; color:black;">--- True</div>
-                        <div style="position:absolute; bottom:15px; right:10px; font-size:10px; color:red;">— Pred</div>
-                    </div>
-                    <div style="text-align: left; max-width: 300px;">
-                        <p id="demoText" style="font-size: 0.9rem;">当前模型仅关注 S 参数拟合。Q 值（红色）充满噪声且在峰值处误差巨大，因为 Q 对相位极度敏感。</p>
+                            <p class="text-slate-400 leading-relaxed">
+                                这是神经网络反向传播特有的问题。误差需要通过链式法则一层层传回输入端。
+                            </p>
+                            
+                            <div class="bg-slate-900/50 rounded-xl p-5 border-l-4 border-purple-500">
+                                <h4 class="text-sm font-bold text-white mb-2">RF 视角类比：多级级联放大器</h4>
+                                <ul class="space-y-2 text-sm text-slate-400">
+                                    <li class="flex items-start gap-2">
+                                        <i class="ph-fill ph-caret-right text-slate-600 mt-1"></i>
+                                        <span><strong class="text-slate-300">梯度消失：</strong>如果每一级增益都 &lt; 1，信号传到最后就淹没在底噪中了。</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <i class="ph-fill ph-caret-right text-slate-600 mt-1"></i>
+                                        <span><strong class="text-slate-300">梯度爆炸：</strong>如果每一级增益都很大，信号很快就会饱和/削波 (Clipping)。</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Right: Project Specifics -->
+                        <div class="lg:w-1/2 bg-slate-900 rounded-xl p-6 border border-slate-700/50">
+                            <h4 class="text-rf-accent font-bold mb-4 text-sm uppercase tracking-wider">本项目中的特殊挑战：Q 值奇点</h4>
+                            
+                            <div class="flex items-center justify-center py-4 mb-4 bg-slate-800 rounded-lg">
+                                <span class="text-xl text-white font-serif italic">Q = Im(Z) / Re(Z)</span>
+                            </div>
+
+                            <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+                                在自谐振频率 (SRF) 附近，<span class="font-serif italic text-white">Re(Z)</span> 趋近于 0。这导致 Q 值趋向无穷大 ($\infty$)。
+                                此时计算出的梯度数值极大，如果不加控制，会瞬间“摧毁”模型的权重矩阵，导致 Loss 变成 NaN。
+                            </p>
+
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3 text-sm">
+                                    <i class="ph-bold ph-check text-green-500"></i>
+                                    <span class="text-slate-300 font-mono">Gradient Clamping</span>
+                                    <span class="text-slate-500">- 限制梯度最大模长 (类似限幅器)</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-sm">
+                                    <i class="ph-bold ph-check text-green-500"></i>
+                                    <span class="text-slate-300 font-mono">Log-MSE</span>
+                                    <span class="text-slate-500">- 在 Log 域计算 Q 误差，压缩数值范围</span>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-slate-800 text-xs text-slate-500 font-mono text-right">
+                                    相关文件: loss_functions.py
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </section>
 
-    <!-- 调优：Optuna -->
-    <section id="tuning">
-        <div class="section-title">
-            <h3>4. 自动化调优：Optuna</h3>
-        </div>
-        <div class="card">
-            <p>模型有多少层？学习率设多少？$w_{kpi}$ 设为 0.1 还是 1.0？手动尝试效率太低。</p>
-            <p>我们使用 <strong>Optuna</strong> 框架进行超参数搜索 (<code>tune_nn.py</code>)。它就像 ADS 中的 Optimizer，自动寻找 Loss 最低的参数组合。</p>
+    <!-- Tuning Section -->
+    <!-- Tuning Section (Refined) -->
+    <section id="tuning" class="py-20 bg-slate-900/50 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            <div class="comparison-container">
-                <div class="comparison-box">
-                    <h4><i class="fas fa-search"></i> 搜索空间</h4>
-                    <ul>
-                        <li><code>lr</code>: 1e-4 ~ 1e-2 (对数分布)</li>
-                        <li><code>batch_size</code>: 128, 256, 512</li>
-                        <li><code>w_kpi</code>: 0.0 ~ 2.0</li>
-                        <li><code>hidden_layers</code>: [64, 64] ~ [512, 512, 512]</li>
-                    </ul>
-                </div>
-                <div class="comparison-box">
-                    <h4><i class="fas fa-chart-line"></i> 优化目标</h4>
-                    <p>最大化综合评分：</p>
-                    $$ \text{Objective} = \alpha \cdot \text{MSE}_S + \beta \cdot \text{MAPE}_L + \gamma \cdot \text{MAPE}_Q $$
-                    <p>Optuna 会自动平衡 S 参数准确度和物理量准确度。</p>
+            <!-- Header -->
+            <div class="mb-12">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white mb-4">3. 调参优化：寻找“最佳工作点”</h2>
+                        <p class="text-lg text-slate-400 max-w-3xl">
+                            模型结构确定后，性能的上限取决于超参数 (Hyperparameters)。这与在 EDA 软件中设定 <span class="text-rf-accent font-mono">Variables</span> 并进行 <span class="text-rf-accent font-mono">Optimization</span> 的过程完全一致。
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
+                        <i class="ph-bold ph-file-code text-rf-secondary"></i>
+                        <span class="text-sm font-mono text-slate-300">tune_nn.py</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- 占位图：Optuna 结果 -->
-            <div class="placeholder-img" style="margin-top: 20px;">
-                <i class="fas fa-network-wired fa-3x"></i>
-                <p>图示：Optuna 平行坐标图 (Parallel Coordinate Plot)</p>
-                <div class="img-prompt">Prompt: An Optuna parallel coordinate plot showing hyperparameters lines connecting learning rate, layers, and objective value. Data visualization style.</div>
+            <!-- Methods Comparison Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                
+                <!-- Grid Search -->
+                <div class="group bg-rf-card p-6 rounded-xl border border-slate-700 hover:border-slate-500 transition-colors">
+                    <div class="mb-4 text-slate-500 group-hover:text-white transition-colors">
+                        <i class="ph-bold ph-grid-four text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Grid Search (网格搜索)</h3>
+                    <p class="text-sm text-slate-400 mb-4 h-10">
+                        类似于 EDA 中的 <span class="text-white">Parameter Sweep</span>。设定步长，穷举所有组合。
+                    </p>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between border-b border-slate-700 pb-1">
+                            <span class="text-slate-500">原理</span>
+                            <span class="text-slate-300">遍历全空间</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-700 pb-1">
+                            <span class="text-slate-500">效率</span>
+                            <span class="text-rf-danger">低 (指数爆炸)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">适用</span>
+                            <span class="text-slate-300">参数极少时</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Random Search -->
+                <div class="group bg-rf-card p-6 rounded-xl border border-slate-700 hover:border-slate-500 transition-colors">
+                    <div class="mb-4 text-slate-500 group-hover:text-white transition-colors">
+                        <i class="ph-bold ph-shuffle text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Random Search (随机搜索)</h3>
+                    <p class="text-sm text-slate-400 mb-4 h-10">
+                        在参数空间内随机采样。比网格搜索更容易“撞”到最优解附近。
+                    </p>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between border-b border-slate-700 pb-1">
+                            <span class="text-slate-500">原理</span>
+                            <span class="text-slate-300">蒙特卡洛采样</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-700 pb-1">
+                            <span class="text-slate-500">效率</span>
+                            <span class="text-rf-warning">中等</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">适用</span>
+                            <span class="text-slate-300">基准测试</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bayesian Optimization -->
+                <div class="group bg-rf-card p-6 rounded-xl border border-rf-secondary/50 shadow-[0_0_20px_rgba(99,102,241,0.1)] relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-2">
+                        <span class="px-2 py-1 bg-rf-secondary text-white text-[10px] font-bold uppercase rounded">推荐</span>
+                    </div>
+                    <div class="mb-4 text-rf-secondary">
+                        <i class="ph-bold ph-brain text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Bayesian Optimization</h3>
+                    <p class="text-sm text-slate-400 mb-4 h-10">
+                        <span class="text-white font-bold">智能搜索</span>。根据历史实验结果，推断哪里最可能出现更优解。这是 <span class="font-bold text-rf-secondary">Optuna</span> 的核心。
+                    </p>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between border-b border-slate-700 pb-1">
+                            <span class="text-slate-500">原理</span>
+                            <span class="text-slate-300">高斯过程/TPE</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-700 pb-1">
+                            <span class="text-slate-500">效率</span>
+                            <span class="text-rf-success">极高</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">适用</span>
+                            <span class="text-slate-300">高维参数调优</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deep Dive: Optuna & WandB -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Optuna Code Logic (Left - 7 cols) -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="flex items-center gap-2 mb-2">
+                        <img src="https://raw.githubusercontent.com/optuna/optuna/master/docs/image/optuna-logo.png" class="h-6 opacity-80" alt="Optuna">
+                        <h3 class="text-xl font-bold text-white">Optuna 实战解析</h3>
+                    </div>
+                    <p class="text-sm text-slate-400 mb-4">Optuna 仪表盘（本地/远程）示例：
+                        <a href="http://10.0.0.61:8557" target="_blank" rel="noopener" class="text-rf-accent underline">http://10.0.0.61:8557</a>
+                    </p>
+                    
+                    <div class="bg-slate-900 rounded-lg border border-slate-700 overflow-hidden shadow-2xl">
+                        <div class="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700">
+                            <span class="text-xs text-slate-400 font-mono">tune_nn.py :: objective()</span>
+                        </div>
+                        <div class="p-4 overflow-x-auto">
+<pre class="text-sm font-mono leading-relaxed"><code class="language-python">def objective(trial):
+    # --- 1. 定义搜索空间 (类似于设置 Variable Range) ---
+    # Log 均匀分布：适合跨数量级的参数（如学习率）
+    lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
+    
+    # 整数分布：适合层数、神经元数量
+    n_layers = trial.suggest_int("n_layers", 3, 6)
+    
+    # --- 2. 关键：Loss 权重平衡 ---
+    # 我们不仅调模型，还要调"物理公式"的权重
+    w_kpi = trial.suggest_float("w_kpi", 0.0, 1.0)
+    
+    # --- 3. 训练与剪枝 (Pruning) ---
+    model = SimpleMLP(..., hidden_dims=[64]*n_layers)
+    
+    for epoch in range(100):
+        val_loss = train_epoch(...)
+        
+        # 汇报进度
+        trial.report(val_loss, epoch)
+        
+        # 如果发现这组参数在前期效果就极差
+        # 直接终止，节省时间 (类似电路仿真的 Stop Criteria)
+        if trial.should_prune():
+            raise optuna.TrialPruned()
+
+    return val_loss</code></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Cheat Sheet -->
+                    <div class="bg-rf-card/50 border border-slate-700/50 rounded-xl p-5">
+                        <h4 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                            <i class="ph-bold ph-list-magnifying-glass text-rf-accent"></i>
+                            实战：RF 建模应该调什么？
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                            <div class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                                <span class="text-slate-400">Learning Rate</span>
+                                <span class="font-mono text-rf-accent">1e-4 ~ 1e-2</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                                <span class="text-slate-400">Batch Size</span>
+                                <span class="font-mono text-rf-accent">32 ~ 1024</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                                <span class="text-slate-400">Hidden Layers</span>
+                                <span class="font-mono text-rf-accent">3 ~ 8 层</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                                <span class="text-slate-400">KPI Loss Weight</span>
+                                <span class="font-mono text-rf-accent">0.1 ~ 5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WandB Visualization (Right - 5 cols) -->
+                <div class="lg:col-span-5 flex flex-col">
+                    <div class="flex items-center gap-2 mb-2">
+                        <img src="https://raw.githubusercontent.com/wandb/assets/main/wandb-logo-yellow-dots-black-wb.svg" class="h-6 opacity-80" alt="WandB">
+                        <h3 class="text-xl font-bold text-white">WandB 可视化</h3>
+                    </div>
+                    
+                    <div class="flex-grow bg-slate-900 rounded-xl border border-slate-700 p-6 flex flex-col justify-between relative overflow-hidden group">
+                        <!-- Abstract Representation of Parallel Coordinates Plot -->
+                        <div class="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
+                             <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                                <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" stroke-width="0.5"/>
+                                </pattern>
+                                <rect width="100%" height="100%" fill="url(#grid)" />
+                              </svg>
+                        </div>
+
+                        <div class="relative z-10">
+                            <h4 class="text-rf-secondary font-bold mb-2">平行坐标图 (Parallel Coordinates)</h4>
+                            <p class="text-sm text-slate-400 mb-6">
+                                WandB 最强大的功能。它能直观展示高维参数之间的关系。
+                                <br>
+                                示例项目与可视化示例：
+                                <a href="https://wandb.ai/yxiaohan/inductor-model" target="_blank" rel="noopener" class="text-rf-accent underline">https://wandb.ai/yxiaohan/inductor-model</a>
+                            </p>
+                            
+                            <!-- Mock Chart -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between text-xs text-slate-500 font-mono uppercase">
+                                    <span>LR</span>
+                                    <span>Layers</span>
+                                    <span>Batch</span>
+                                    <span>Loss</span>
+                                </div>
+                                <!-- Lines representing trials -->
+                                <div class="relative h-24 w-full">
+                                    <!-- Bad Trial -->
+                                    <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                                        <polyline points="0,80 100,20 200,90 300,10" fill="none" stroke="#ef4444" stroke-width="2" stroke-opacity="0.5" />
+                                    </svg>
+                                    <!-- Good Trial -->
+                                    <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                                        <polyline points="0,50 100,50 200,40 300,90" fill="none" stroke="#10b981" stroke-width="2" />
+                                    </svg>
+                                    <!-- Average Trials -->
+                                    <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                                        <polyline points="0,60 100,40 200,60 300,50" fill="none" stroke="#64748b" stroke-width="1" stroke-opacity="0.3" />
+                                        <polyline points="0,30 100,70 200,20 300,60" fill="none" stroke="#64748b" stroke-width="1" stroke-opacity="0.3" />
+                                    </svg>
+                                </div>
+                                <div class="flex justify-between text-xs font-mono">
+                                    <span class="text-rf-danger">发散</span>
+                                    <span class="text-rf-success">收敛</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="relative z-10 mt-6 pt-6 border-t border-slate-800">
+                            <p class="text-xs text-slate-400">
+                                <i class="ph-bold ph-lightbulb text-yellow-500 mr-1"></i>
+                                <span class="text-white font-semibold">Insight:</span> 
+                                通过此图可以一眼看出：“当学习率 > 0.005 时，模型很难收敛（红线区域）”。
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-</div>
+    <!-- Footer -->
+    <footer class="bg-rf-base border-t border-slate-800 pt-12 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex justify-center items-center gap-2 mb-4 text-slate-500">
+                <i class="ph-bold ph-code"></i>
+                <span>Generated for RF Engineering AI Tutorial</span>
+            </div>
+            <p class="text-slate-600 text-sm">
+                &copy; 2023 RF.AI Lab. 基于 TSMC 65n 工艺数据。
+            </p>
+        </div>
+    </footer>
 
-<footer>
-    <p>&copy; 2023 RFIC-AI Designer Tutorial. 基于 Reverse Designer 项目生成。</p>
-    <p>Empowering RF Engineers with Artificial Intelligence.</p>
-</footer>
-
-<script>
-    // 简单的交互逻辑
-    function updateDemo() {
-        const val = document.getElementById('weightSlider').value;
-        const textLabel = document.getElementById('weightValue');
-        const demoText = document.getElementById('demoText');
-        const predPath = document.getElementById('predPath');
-        
-        textLabel.innerText = val;
-
-        if (val == 0) {
-            // 噪声很大的曲线
-            predPath.setAttribute('d', "M 10 170 Q 50 160 80 120 T 140 30 T 200 120 T 270 170"); 
-            // 简单的模拟噪声效果，实际 SVG path 应该更复杂
-            // 这里为了简单，我们仅仅偏移曲线
-            predPath.setAttribute('d', "M 10 170 C 40 160, 60 180, 80 140 S 120 50, 140 10 S 180 60, 200 130 S 240 160, 270 180");
-            demoText.innerText = "状态：XGBoost 或 基础 MLP。Q 值（红色）充满噪声，峰值偏移严重，这是因为模型没有学到导数关系。";
-        } else if (val == 0.5) {
-            // 稍微好一点
-             predPath.setAttribute('d', "M 10 170 Q 130 0 270 160");
-             demoText.innerText = "状态：PINN (低权重)。S 参数依然很准，Q 值曲线开始变得平滑，但在高 Q 值区域仍有误差。";
-        } else {
-            // 非常贴合
-            predPath.setAttribute('d', "M 10 170 Q 140 10 270 170");
-            demoText.innerText = "状态：PINN (优化后)。模型被迫同时满足 S 参数和 Q 值公式，预测曲线（红色）与真实物理特性完美重合。";
-        }
-    }
-</script>
-
+    <!-- Init Prism -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>
 </html>
