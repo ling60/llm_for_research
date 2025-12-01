@@ -205,6 +205,39 @@
                             <code class="text-xs text-rf-accent font-mono">train_xgboost.py</code>
                             <p class="text-sm text-slate-400 mt-2">使用此脚本快速验证数据质量。如果 XGBoost 效果很差，通常意味着数据本身有问题，而非模型问题。</p>
                         </div>
+
+                        <!-- Additional classic ML models: Random Forest, SVM, KNN -->
+                        <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700/50">
+                                <h4 class="text-sm font-bold text-white mb-1">Random Forest</h4>
+                                <p class="text-xs text-slate-400 mb-2">基于决策树的集成方法，通过随机采样和特征子集创建多棵树并取平均/投票。</p>
+                                <ul class="text-xs text-slate-400 list-disc list-inside">
+                                    <li>优点：鲁棒、对异常值与缺失值容错强</li>
+                                    <li>缺点：可解释性低、对高维稀疏特征不友好</li>
+                                </ul>
+                                <div class="mt-2 text-xs text-slate-500 font-mono">train_rf.py</div>
+                            </div>
+
+                            <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700/50">
+                                <h4 class="text-sm font-bold text-white mb-1">Support Vector Machine (SVM)</h4>
+                                <p class="text-xs text-slate-400 mb-2">通过在高维空间寻找最大间隔超平面来分类或回归（SVR）。适合小样本、低噪声数据。</p>
+                                <ul class="text-xs text-slate-400 list-disc list-inside">
+                                    <li>优点：对高维空间有理论保证，能处理非线性核</li>
+                                    <li>缺点：对大规模数据和噪声敏感，调参（核、C、gamma）复杂</li>
+                                </ul>
+                                <div class="mt-2 text-xs text-slate-500 font-mono">train_svm.py</div>
+                            </div>
+
+                            <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-700/50">
+                                <h4 class="text-sm font-bold text-white mb-1">K-Nearest Neighbors (KNN)</h4>
+                                <p class="text-xs text-slate-400 mb-2">基于距离度量的非参数方法，直接使用训练数据进行预测（懒惰学习）。</p>
+                                <ul class="text-xs text-slate-400 list-disc list-inside">
+                                    <li>优点：实现简单，不需要训练阶段</li>
+                                    <li>缺点：查询慢、对数据尺度敏感、内存占用高</li>
+                                </ul>
+                                <div class="mt-2 text-xs text-slate-500 font-mono">train_knn.py</div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- MLP Content -->
